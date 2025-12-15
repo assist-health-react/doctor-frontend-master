@@ -1,0 +1,64 @@
+/* Dashboard specific styles */
+.rbc-calendar {
+  background-color: white;
+  border-radius: 0.5rem;
+}
+
+.rbc-toolbar button {
+  color: #4B5563;
+  border: 1px solid #E5E7EB;
+}
+
+.rbc-toolbar button:hover {
+  background-color: #F3F4F6;
+}
+
+.rbc-toolbar button.rbc-active {
+  background-color: #3B82F6;
+  color: white;
+}
+
+.rbc-toolbar button.rbc-active:hover {
+  background-color: #2563EB;
+}
+
+.rbc-event {
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+}
+
+.rbc-today {
+  background-color: #EFF6FF;
+}
+
+.rbc-off-range-bg {
+  background-color: #F9FAFB;
+}
+
+.rbc-header {
+  padding: 8px;
+  font-weight: 600;
+  color: #4B5563;
+}
+
+.rbc-time-view {
+  border: 1px solid #E5E7EB;
+  border-radius: 0.5rem;
+}
+
+.rbc-timeslot-group {
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.rbc-time-content {
+  border-top: 1px solid #E5E7EB;
+}
+
+.rbc-time-header-content {
+  border-left: 1px solid #E5E7EB;
+}
+
+.rbc-day-slot .rbc-time-slot {
+  border-top: 1px solid #F3F4F6;
+} 

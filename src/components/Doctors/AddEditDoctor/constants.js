@@ -1,0 +1,22 @@
+export const specialityOptions = [
+  { value: 'cardiology', label: 'Cardiology' },
+  { value: 'dermatology', label: 'Dermatology' },
+  { value: 'endocrinology', label: 'Endocrinology' },
+  { value: 'gastroenterology', label: 'Gastroenterology' },
+  { value: 'general_medicine', label: 'General Medicine' },
+  { value: 'neurology', label: 'Neurology' },
+  { value: 'oncology', label: 'Oncology' },
+  { value: 'ophthalmology', label: 'Ophthalmology' },
+  { value: 'orthopedics', label: 'Orthopedics' },
+  { value: 'pediatrics', label: 'Pediatrics' },
+  { value: 'psychiatry', label: 'Psychiatry' },
+  { value: 'pulmonology', label: 'Pulmonology' },
+  { value: 'urology', label: 'Urology' },
+  { value: 'gynecology', label: 'Gynecology' },
+  { value: 'ent', label: 'ENT' },
+  { value: 'dental', label: 'Dental' },
+  { value: 'physiotherapy', label: 'Physiotherapy' },
+  { value: 'ayurveda', label: 'Ayurveda' },
+  { value: 'homeopathy', label: 'Homeopathy' },
+  { value: 'other', label: 'Other' }
+]; 

@@ -1,0 +1,66 @@
+# name: Deploy Admin Backend
+
+# on:
+#   push:
+#     branches: [main]
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v4
+
+#       - uses: appleboy/ssh-action@v1
+#         with:
+#           host: ${{ secrets.EC2_HOST }}
+#           username: ${{ secrets.EC2_USER }}
+#           key: ${{ secrets.EC2_KEY }}
+#           script: |
+#             rsync -av --delete $GITHUB_WORKSPACE/ ~/assist-health/doctor-frontend-master/
+#             cd ~/assist-health
+#             docker compose -f docker-compose.admin.yml build doctor_frontend
+#             docker compose -f docker-compose.admin.yml up -d doctor_frontend
+name: Deploy Doctor Frontend
+
+on:
+  push:
+    branches:
+      - main
+
+# ✅ PREVENT MULTIPLE STUCK DEPLOYS
+concurrency:
+  group: doctor-frontend-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+
+          # ✅ SAFETY NET (NO HANGING)
+          timeout: 15m
+          command_timeout: 15m
+
+          script: |
+            set -e
+
+            echo "📂 Go to Doctor frontend repo"
+            cd /home/ec2-user/assist-health/doctor-frontend-master
+
+            echo "⬇ Pull latest code"
+            git pull origin main
+
+            echo "🐳 Build & restart Doctor frontend"
+            cd /home/ec2-user/assist-health
+            docker compose -f docker-compose.users.yml build doctor_frontend
+            docker compose -f docker-compose.users.yml up -d --build doctor_frontend

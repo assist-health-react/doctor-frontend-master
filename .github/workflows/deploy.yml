@@ -54,16 +54,35 @@ jobs:
           script: |
             set -e
 
-            echo "📂 Go to  frontend repo"
+            echo "📂 Go to frontend repo"
             cd /home/ec2-user/assist-health/doctor-frontend-master
+
+            echo "🧹 Reset any local server changes (CI/CD safety)"
+            git fetch origin
+            git reset --hard origin/main
+            git clean -fd
 
             echo "⬇ Pull latest code"
             git pull origin main
 
-            echo "🐳 Build & restart  frontend"
+            echo "🐳 Build & restart frontend"
             cd /home/ec2-user/assist-health
             docker compose -f docker-compose.users.yml build doctor_frontend
             docker compose -f docker-compose.users.yml up -d --build doctor_frontend
+
+          # script: |
+          #   set -e
+
+          #   echo "📂 Go to  frontend repo"
+          #   cd /home/ec2-user/assist-health/doctor-frontend-master
+
+          #   echo "⬇ Pull latest code"
+          #   git pull origin main
+
+          #   echo "🐳 Build & restart  frontend"
+          #   cd /home/ec2-user/assist-health
+          #   docker compose -f docker-compose.users.yml build doctor_frontend
+          #   docker compose -f docker-compose.users.yml up -d --build doctor_frontend
 # name: Deploy Doctor Frontend
 
 # on:

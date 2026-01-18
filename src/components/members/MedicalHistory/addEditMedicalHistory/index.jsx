@@ -12,12 +12,13 @@ import { toast } from 'react-toastify';
 const AddMedicalHistory = ({ member, onClose, onSave, initialData, isEdit = false }) => {
   const [formData, setFormData] = useState({
     primaryCarePhysician: {
-      name: 'Dr. John Smith',
-      contactNumber: '+91 98765-43210'
+      name: '',
+      contactNumber: ''
     },
+      //2026
     medicalHistory: [{
       condition: '',
-      diagnosisDate: '',
+      diagnosisDate:new Date().toISOString().split('T')[0],
       treatment: '',
       status: 'active',
       notes: ''
@@ -95,8 +96,8 @@ const AddMedicalHistory = ({ member, onClose, onSave, initialData, isEdit = fals
       console.log('Initializing form data in edit mode:', { isEdit, initialData });
       const mappedData = {
         primaryCarePhysician: initialData.primaryCarePhysician || formData.primaryCarePhysician,
-        medicalHistory: initialData.previousMedicalConditions?.length > 0 
-          ? initialData.previousMedicalConditions.map(({ _id, ...rest }) => ({
+              medicalHistory: initialData.medicalHistory?.length > 0 
+          ? initialData.medicalHistory.map(({ _id, ...rest }) => ({
               condition: rest.condition || '',
               diagnosisDate: rest.diagnosedAt || '',
               treatment: rest.treatmentReceived || '',
@@ -139,8 +140,8 @@ const AddMedicalHistory = ({ member, onClose, onSave, initialData, isEdit = fals
               surgeonName: rest.surgeonName || ''
             }))
           : formData.surgeries,
-        previousConditions: initialData.previousMedicalConditions?.length > 0 
-          ? initialData.previousMedicalConditions.map(({ _id, ...rest }) => ({
+        previousConditions: initialData.previousConditions?.length > 0 
+          ? initialData.previousConditions.map(({ _id, ...rest }) => ({
               condition: rest.condition || '',
               diagnosedAt: rest.diagnosedAt ? new Date(rest.diagnosedAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
               treatmentReceived: rest.treatmentReceived || '',
@@ -154,8 +155,10 @@ const AddMedicalHistory = ({ member, onClose, onSave, initialData, isEdit = fals
               dateReceived: rest.date?.split('T')[0] || ''
             }))
           : formData.immunizationHistory,
-        medicalTestResults: initialData.medicalReports?.length > 0
-          ? initialData.medicalReports.map(({ _id, ...rest }) => ({
+      medicalTestResults: initialData.medicalTestResults?.length > 0
+          ? initialData.medicalTestResults.map(({ _id, ...rest }) => ({
+        // medicalTestResults: initialData.medicalReports?.length > 0
+        //   ? initialData.medicalReports.map(({ _id, ...rest }) => ({
               name: rest.name || '',
               date: new Date().toISOString().split('T')[0],
               results: rest.files?.join(', ') || ''
@@ -326,116 +329,168 @@ const AddMedicalHistory = ({ member, onClose, onSave, initialData, isEdit = fals
     setUploads(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
     
+  //   if (!member?._id && !member?.id) {
+  //     toast.error('Member ID is required');
+  //     return;
+  //   }
+
+  //   try {
+  //     setIsSubmitting(true);
+  //     console.log('Form submission started:', { isEdit, initialData });
+  //     console.log('Member data:', member);
+  //     console.log('Form data before transform:', formData);
+
+  //     // Transform the data to match API requirements
+  //     const transformedData = {
+  //       memberId: member._id || member.id,
+  //       medicalReports: uploads
+  //         .filter(upload => upload.title && upload.fileUrl)
+  //         .map(upload => ({
+  //           name: upload.title,
+  //           files: [upload.fileUrl]
+  //         })),
+  //       treatingDoctors: formData.treatingDoctors.map(doctor => ({
+  //         name: doctor.name,
+  //         hospitalName: doctor.hospitalName,
+  //         speciality: doctor.speciality
+  //       })),
+  //       followUps: formData.followUps.map(followUp => ({
+  //         date: followUp.date ? new Date(followUp.date).toISOString() : null,
+  //         specialistDetails: followUp.specialistDetails,
+  //         remarks: followUp.remarks
+  //       })),
+  //       familyHistory: formData.familyHistory.map(history => ({
+  //         condition: history.condition,
+  //         relationship: history.relationship
+  //       })),
+  //       allergies: formData.allergies,
+  //       currentMedications: formData.currentMedications,
+  //       surgeries: formData.surgeries.map(surgery => ({
+  //         procedure: surgery.procedure,
+  //         date: surgery.date ? new Date(surgery.date).toISOString() : null,
+  //         surgeonName: surgery.surgeonName
+  //       })),
+  //       previousMedicalConditions: formData.previousConditions.map(condition => {
+  //         console.log('Processing condition:', condition);
+  //         return {
+  //           condition: condition.condition,
+  //           diagnosedAt: condition.diagnosedAt ? new Date(condition.diagnosedAt).toISOString() : null,
+  //           treatmentReceived: condition.treatmentReceived,
+  //           notes: condition.notes || '',
+  //           status: condition.status
+  //         };
+  //       }),
+  //       immunizations: formData.immunizationHistory.map(immunization => ({
+  //         vaccine: immunization.vaccination,
+  //         date: immunization.dateReceived ? new Date(immunization.dateReceived).toISOString() : null
+  //       })),
+  //       currentSymptoms: formData.currentSymptoms,
+  //       healthInsurance: [{
+  //         provider: formData.healthInsurance.provider,
+  //         policyNumber: formData.healthInsurance.policyNumber,
+  //         expiryDate: formData.healthInsurance.expiryDate ? new Date(formData.healthInsurance.expiryDate).toISOString() : null
+  //       }],
+  //       lifestyleHabits: formData.lifestyleHabits,
+  //       medicalTestResults: formData.medicalTestResults.map(test => ({
+  //         name: test.name,
+  //         date: test.date ? new Date(test.date).toISOString() : null,
+  //         results: test.results
+  //       }))
+  //     };
+
+  //     console.log('Transformed data:', transformedData);
+
+  //     // Use the appropriate service method based on mode
+  //     let response;
+  //     if (isEdit) {
+  //       console.log('Updating medical history with:', {
+  //         historyId: initialData._id,
+  //         memberId: member._id || member.id,
+  //         data: transformedData
+  //       });
+  //       response = await medicalHistoryService.updateMedicalHistory(initialData._id, member._id || member.id, transformedData);
+  //       console.log('Update response:', response);
+  //       if (response.status === 'success') {
+  //         toast.success('Medical history updated successfully');
+  //       }
+  //     } else {
+  //       console.log('Creating new medical history:', transformedData);
+  //       response = await medicalHistoryService.createMedicalHistory(transformedData);
+  //       console.log('Create response:', response);
+  //       if (response.status === 'success') {
+  //         toast.success('Medical history created successfully');
+  //       }
+  //     }
+
+  //     if (response && response.status === 'success') {
+  //       onSave(response.data);
+  //       onClose();
+  //     } else {
+  //       throw new Error(isEdit ? 'Failed to update medical history' : 'Failed to create medical history');
+  //     }
+  //   } catch (error) {
+  //     console.error(isEdit ? 'Error updating medical history:' : 'Error creating medical history:', error);
+  //     toast.error(error.message || (isEdit ? 'Failed to update medical history' : 'Failed to create medical history'));
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
+    //2026
+  const handleSubmit = async (e) => {
+    e.preventDefault();   // 🔥 IMPORTANT — Stops page reload
+  
     if (!member?._id && !member?.id) {
-      toast.error('Member ID is required');
+      toast.error("Missing Member ID");
       return;
     }
-
+  
     try {
       setIsSubmitting(true);
-      console.log('Form submission started:', { isEdit, initialData });
-      console.log('Member data:', member);
-      console.log('Form data before transform:', formData);
-
-      // Transform the data to match API requirements
-      const transformedData = {
-        memberId: member._id || member.id,
-        medicalReports: uploads
-          .filter(upload => upload.title && upload.fileUrl)
-          .map(upload => ({
-            name: upload.title,
-            files: [upload.fileUrl]
-          })),
-        treatingDoctors: formData.treatingDoctors.map(doctor => ({
-          name: doctor.name,
-          hospitalName: doctor.hospitalName,
-          speciality: doctor.speciality
-        })),
-        followUps: formData.followUps.map(followUp => ({
-          date: followUp.date ? new Date(followUp.date).toISOString() : null,
-          specialistDetails: followUp.specialistDetails,
-          remarks: followUp.remarks
-        })),
-        familyHistory: formData.familyHistory.map(history => ({
-          condition: history.condition,
-          relationship: history.relationship
-        })),
-        allergies: formData.allergies,
-        currentMedications: formData.currentMedications,
-        surgeries: formData.surgeries.map(surgery => ({
-          procedure: surgery.procedure,
-          date: surgery.date ? new Date(surgery.date).toISOString() : null,
-          surgeonName: surgery.surgeonName
-        })),
-        previousMedicalConditions: formData.previousConditions.map(condition => {
-          console.log('Processing condition:', condition);
-          return {
-            condition: condition.condition,
-            diagnosedAt: condition.diagnosedAt ? new Date(condition.diagnosedAt).toISOString() : null,
-            treatmentReceived: condition.treatmentReceived,
-            notes: condition.notes || '',
-            status: condition.status
-          };
-        }),
-        immunizations: formData.immunizationHistory.map(immunization => ({
-          vaccine: immunization.vaccination,
-          date: immunization.dateReceived ? new Date(immunization.dateReceived).toISOString() : null
-        })),
-        currentSymptoms: formData.currentSymptoms,
-        healthInsurance: [{
-          provider: formData.healthInsurance.provider,
-          policyNumber: formData.healthInsurance.policyNumber,
-          expiryDate: formData.healthInsurance.expiryDate ? new Date(formData.healthInsurance.expiryDate).toISOString() : null
-        }],
-        lifestyleHabits: formData.lifestyleHabits,
-        medicalTestResults: formData.medicalTestResults.map(test => ({
-          name: test.name,
-          date: test.date ? new Date(test.date).toISOString() : null,
-          results: test.results
-        }))
+  
+      // 🔥 Build medicalReports
+      const medicalReports = uploads
+        .filter(u => u.title && u.fileUrl)
+        .map(u => ({
+          name: u.title,
+          files: [u.fileUrl]
+        }));
+  
+      // 🔥 Build final data from formData state
+      const payload = {
+        ...formData,
+        medicalReports,
+        memberId: member._id || member.id
       };
-
-      console.log('Transformed data:', transformedData);
-
-      // Use the appropriate service method based on mode
+  
       let response;
+  
       if (isEdit) {
-        console.log('Updating medical history with:', {
-          historyId: initialData._id,
-          memberId: member._id || member.id,
-          data: transformedData
-        });
-        response = await medicalHistoryService.updateMedicalHistory(initialData._id, member._id || member.id, transformedData);
-        console.log('Update response:', response);
-        if (response.status === 'success') {
-          toast.success('Medical history updated successfully');
-        }
+        response = await medicalHistoryService.updateMedicalHistory(
+          initialData._id,
+          member._id || member.id,
+          payload
+        );
+        toast.success("Medical History Updated Successfully");
       } else {
-        console.log('Creating new medical history:', transformedData);
-        response = await medicalHistoryService.createMedicalHistory(transformedData);
-        console.log('Create response:', response);
-        if (response.status === 'success') {
-          toast.success('Medical history created successfully');
-        }
+        response = await medicalHistoryService.createMedicalHistory(payload);
+        toast.success("Medical History Created Successfully");
       }
-
-      if (response && response.status === 'success') {
-        onSave(response.data);
+  
+      if (response) {
+        onSave(response);
+       // onSave(response);
         onClose();
-      } else {
-        throw new Error(isEdit ? 'Failed to update medical history' : 'Failed to create medical history');
       }
+  
     } catch (error) {
-      console.error(isEdit ? 'Error updating medical history:' : 'Error creating medical history:', error);
-      toast.error(error.message || (isEdit ? 'Failed to update medical history' : 'Failed to create medical history'));
+      toast.error("Something went wrong while saving");
     } finally {
       setIsSubmitting(false);
     }
   };
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
       <div className="bg-white w-full max-w-4xl mx-4 rounded-lg relative min-h-screen md:min-h-0 md:my-8">
@@ -459,7 +514,11 @@ const AddMedicalHistory = ({ member, onClose, onSave, initialData, isEdit = fals
             <MemberBasicInfo member={member} />
 
             {/* Primary Care Physician */}
-            <PrimaryCarePhysician data={formData.primaryCarePhysician} />
+            {/* <PrimaryCarePhysician data={formData.primaryCarePhysician} /> */}
+            <PrimaryCarePhysician
+              data={formData.primaryCarePhysician}
+              handleInputChange={handleInputChange}
+            />
 
             {/* Medical History Section */}
             <MedicalHistorySection

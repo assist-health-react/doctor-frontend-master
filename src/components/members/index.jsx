@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useMemo,useCallback,useRef  } from 'react';//2026
 import { useNavigate } from 'react-router-dom';
 import { 
   FaPlus, 
@@ -27,6 +27,7 @@ import MemberFilter from './MemberFilter';
 const Members = () => {
   const { showSnackbar } = useSnackbar();
   const [members, setMembers] = useState([]);
+   const isInitialMount = useRef(true);//2026
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -53,75 +54,432 @@ const Members = () => {
     to_date: ''
   });
 
-  const fetchMembers = useCallback(async (pageNum = 1, search = '', filters = {}) => {
+  
+// Pagination 15.1.2026
+const [activeFilters, setActiveFilters] = useState({});
+const [selectedMemberForView, setSelectedMemberForView] = useState(null);
+const [totalMembers, setTotalMembers] = useState(0);
+const limit = 10;
+
+// FRONTEND pagination slice
+const paginatedMembers = useMemo(() => {
+  const start = (page - 1) * limit;
+  const end = start + limit;
+  return members.slice(start, end);
+}, [members, page, limit]);
+
+// Single effect to handle both initial load and subsequent updates
+  useEffect(() => {
+    const fetchData = async () => {
+      // Skip if loading
+      if (loading) return;
+
+      // On initial mount
+      if (isInitialMount.current) {
+        isInitialMount.current = false;
+        await fetchMembers(1, false);
+        return;
+      }
+
+      // For subsequent filter changes
+      if (!searchTerm) {
+        await fetchMembers(1, false);
+      }
+    };
+
+    fetchData();
+  }, [activeFilters]); // activeFilters dependency only
+///SAMPLE///
+const staticMembers = [
+  {
+    "_id": "696341efe8467d1b49877001",
+    "name": "Siva Kumar",
+    "email": "siva@gmail.com",
+    "phone": "919876567890",
+    "dob": "1995-06-12T00:00:00.000Z",
+    "gender": "male",
+    "profilePic": null,
+    "role": "member",
+    "languagesSpoken": ["Tamil"],
+    "introduction": "Regular health member",
+    "total_assigned_members": 0,
+    "rating": 0,
+    "createdAt": "2026-01-01T06:23:43.153Z",
+    "updatedAt": "2026-01-01T06:23:43.153Z",
+    "navigatorId": "AHNAV006",
+    "__v": 0
+  },
+  {
+    "_id": "696341efe8467d1b49877002",
+    "name": "Kumaravel",
+    "email": "kumar@gmail.com",
+    "phone": "919834567321",
+    "dob": "1992-03-21T00:00:00.000Z",
+    "gender": "male",
+    "profilePic": null,
+    "role": "member",
+    "languagesSpoken": ["Tamil", "English"],
+    "introduction": "Senior citizen member",
+    "total_assigned_members": 0,
+    "rating": 0,
+    "createdAt": "2026-01-02T08:10:12.000Z",
+    "updatedAt": "2026-01-02T08:10:12.000Z",
+    "navigatorId": "AHNAV006",
+    "__v": 0
+  },
+  {
+    "_id": "696341efe8467d1b49877003",
+    "name": "Priya",
+    "email": "priya@gmail.com",
+    "phone": "919812345678",
+    "dob": "1998-11-05T00:00:00.000Z",
+    "gender": "female",
+    "profilePic": null,
+    "role": "member",
+    "languagesSpoken": ["Tamil"],
+    "introduction": "Student member",
+    "total_assigned_members": 0,
+    "rating": 0,
+    "createdAt": "2026-01-03T09:15:30.000Z",
+    "updatedAt": "2026-01-03T09:15:30.000Z",
+    "navigatorId": "AHNAV006",
+    "__v": 0
+  },
+  {
+    "_id": "696341efe8467d1b49877004",
+    "name": "Arun",
+    "email": "arun@gmail.com",
+    "phone": "919823456789",
+    "dob": "1990-07-19T00:00:00.000Z",
+    "gender": "male",
+    "profilePic": null,
+    "role": "member",
+    "languagesSpoken": ["Tamil", "English"],
+    "introduction": "Working professional",
+    "total_assigned_members": 0,
+    "rating": 0,
+    "createdAt": "2026-01-04T10:45:00.000Z",
+    "updatedAt": "2026-01-04T10:45:00.000Z",
+    "navigatorId": "AHNAV006",
+    "__v": 0
+  },
+  {
+    "_id": "696341efe8467d1b49877005",
+    "name": "Divya",
+    "email": "divya@gmail.com",
+    "phone": "919845612378",
+    "dob": "1996-01-25T00:00:00.000Z",
+    "gender": "female",
+    "profilePic": null,
+    "role": "member",
+    "languagesSpoken": ["Tamil"],
+    "introduction": "Fitness enthusiast",
+    "total_assigned_members": 0,
+    "rating": 0,
+    "createdAt": "2026-01-05T11:30:20.000Z",
+    "updatedAt": "2026-01-05T11:30:20.000Z",
+    "navigatorId": "AHNAV006",
+    "__v": 0
+  },
+  {
+    "_id": "696341efe8467d1b49877006",
+    "name": "Ramesh",
+    "email": "ramesh@gmail.com",
+    "phone": "919856789012",
+    "dob": "1988-09-14T00:00:00.000Z",
+    "gender": "male",
+    "profilePic": null,
+    "role": "member",
+    "languagesSpoken": ["Tamil"],
+    "introduction": "Diabetic care member",
+    "total_assigned_members": 0,
+    "rating": 0,
+    "createdAt": "2026-01-06T12:10:45.000Z",
+    "updatedAt": "2026-01-06T12:10:45.000Z",
+    "navigatorId": "AHNAV006",
+    "__v": 0
+  },
+  {
+    "_id": "696341efe8467d1b49877007",
+    "name": "Lakshmi",
+    "email": "lakshmi@gmail.com",
+    "phone": "919867890123",
+    "dob": "1993-12-03T00:00:00.000Z",
+    "gender": "female",
+    "profilePic": null,
+    "role": "member",
+    "languagesSpoken": ["Tamil"],
+    "introduction": "Wellness program member",
+    "total_assigned_members": 0,
+    "rating": 0,
+    "createdAt": "2026-01-07T14:22:10.000Z",
+    "updatedAt": "2026-01-07T14:22:10.000Z",
+    "navigatorId": "AHNAV006",
+    "__v": 0
+  },
+  {
+    "_id": "696341efe8467d1b49877008",
+    "name": "Vijay",
+    "email": "vijay@gmail.com",
+    "phone": "919878901234",
+    "dob": "1991-04-28T00:00:00.000Z",
+    "gender": "male",
+    "profilePic": null,
+    "role": "member",
+    "languagesSpoken": ["Tamil", "English"],
+    "introduction": "Corporate member",
+    "total_assigned_members": 0,
+    "rating": 0,
+    "createdAt": "2026-01-08T15:05:00.000Z",
+    "updatedAt": "2026-01-08T15:05:00.000Z",
+    "navigatorId": "AHNAV006",
+    "__v": 0
+  },
+  {
+    "_id": "696341efe8467d1b49877009",
+    "name": "Meena",
+    "email": "meena@gmail.com",
+    "phone": "919889012345",
+    "dob": "1997-08-09T00:00:00.000Z",
+    "gender": "female",
+    "profilePic": null,
+    "role": "member",
+    "languagesSpoken": ["Tamil"],
+    "introduction": "Nutrition care member",
+    "total_assigned_members": 0,
+    "rating": 0,
+    "createdAt": "2026-01-09T16:45:30.000Z",
+    "updatedAt": "2026-01-09T16:45:30.000Z",
+    "navigatorId": "AHNAV006",
+    "__v": 0
+  },
+  {
+    "_id": "696341efe8467d1b49877010",
+    "name": "Senthil",
+    "email": "senthil@gmail.com",
+    "phone": "919890123456",
+    "dob": "1989-10-18T00:00:00.000Z",
+    "gender": "male",
+    "profilePic": null,
+    "role": "member",
+    "languagesSpoken": ["Tamil"],
+    "introduction": "Senior health plan",
+    "total_assigned_members": 0,
+    "rating": 0,
+    "createdAt": "2026-01-10T17:30:00.000Z",
+    "updatedAt": "2026-01-10T17:30:00.000Z",
+    "navigatorId": "AHNAV006",
+    "__v": 0
+  },
+  {
+    "_id": "696341efe8467d1b49877011",
+    "name": "Anitha",
+    "email": "anitha@gmail.com",
+    "phone": "919801234567",
+    "dob": "1994-02-11T00:00:00.000Z",
+    "gender": "female",
+    "profilePic": null,
+    "role": "member",
+    "languagesSpoken": ["Tamil"],
+    "introduction": "Women wellness member",
+    "total_assigned_members": 0,
+    "rating": 0,
+    "createdAt": "2026-01-11T09:15:00.000Z",
+    "updatedAt": "2026-01-11T09:15:00.000Z",
+    "navigatorId": "AHNAV006",
+    "__v": 0
+  },
+  {
+    "_id": "696341efe8467d1b49877012",
+    "name": "Mohan",
+    "email": "mohan@gmail.com",
+    "phone": "919812309876",
+    "dob": "1987-06-06T00:00:00.000Z",
+    "gender": "male",
+    "profilePic": null,
+    "role": "member",
+    "languagesSpoken": ["Tamil"],
+    "introduction": "Heart care member",
+    "total_assigned_members": 0,
+    "rating": 0,
+    "createdAt": "2026-01-12T10:40:00.000Z",
+    "updatedAt": "2026-01-12T10:40:00.000Z",
+    "navigatorId": "AHNAV006",
+    "__v": 0
+  },
+  {
+    "_id": "696341efe8467d1b49877013",
+    "name": "Revathi",
+    "email": "revathi@gmail.com",
+    "phone": "919823450987",
+    "dob": "1999-05-30T00:00:00.000Z",
+    "gender": "female",
+    "profilePic": null,
+    "role": "member",
+    "languagesSpoken": ["Tamil"],
+    "introduction": "Young adult member",
+    "total_assigned_members": 0,
+    "rating": 0,
+    "createdAt": "2026-01-13T11:55:00.000Z",
+    "updatedAt": "2026-01-13T11:55:00.000Z",
+    "navigatorId": "AHNAV006",
+    "__v": 0
+  },
+  {
+    "_id": "696341efe8467d1b49877014",
+    "name": "Balaji",
+    "email": "balaji@gmail.com",
+    "phone": "919834560987",
+    "dob": "1991-09-09T00:00:00.000Z",
+    "gender": "male",
+    "profilePic": null,
+    "role": "member",
+    "languagesSpoken": ["Tamil", "English"],
+    "introduction": "Annual plan member",
+    "total_assigned_members": 0,
+    "rating": 0,
+    "createdAt": "2026-01-14T12:30:00.000Z",
+    "updatedAt": "2026-01-14T12:30:00.000Z",
+    "navigatorId": "AHNAV006",
+    "__v": 0
+  },
+  {
+    "_id": "696341efe8467d1b49877015",
+    "name": "Nandhini",
+    "email": "nandhini@gmail.com",
+    "phone": "919845670123",
+    "dob": "1996-12-17T00:00:00.000Z",
+    "gender": "female",
+    "profilePic": null,
+    "role": "member",
+    "languagesSpoken": ["Tamil"],
+    "introduction": "Lifestyle care member",
+    "total_assigned_members": 0,
+    "rating": 0,
+    "createdAt": "2026-01-15T13:20:00.000Z",
+    "updatedAt": "2026-01-15T13:20:00.000Z",
+    "navigatorId": "AHNAV006",
+    "__v": 0
+  }
+];
+
+
+const fetchMembers = useCallback(
+  async (pageNum = 1, search = '', filters = {}) => {
     try {
+      if (loading) return;
+
       setLoading(true);
       setError(null);
-      console.log('Fetching members with params:', { pageNum, search, filters });
-      
-      // Get user from localStorage to get navigatorId
+
       const user = JSON.parse(localStorage.getItem('user') || '{}');
-      if (!user || !user.userId) {
-        throw new Error('User not authenticated. Please login again.');
-      }
-      
-      // Create a new object with navigatorId first
+      if (!user?.userId) throw new Error('User not authenticated');
+
       const queryParams = {
         doctorId: user.userId,
         page: pageNum,
-        limit: 10,
+        limit: limit,
         search,
         sortBy: 'createdAt',
         sortOrder: 'asc',
-        isStudent: false
+        isStudent: false,
+        ...filters
       };
 
-      // Only spread filters that don't override our required params
-      const { doctorId, page, limit, ...otherFilters } = filters;
-      
-      const finalParams = {
-        ...queryParams,
-        ...otherFilters
-      };
+    const response = await membersService.getMembers(queryParams);
 
-      console.log('Final query params:', finalParams);
-      
-      const response = await membersService.getMembers(finalParams);
+    //Test
+    //  const response = {
+    //   status: 'success',
+    //   data: staticMembers
+    // };
 
-      console.log('API Response:', response);
-      
-      // Check if response has the expected structure
-      if (response?.status === 'success' && Array.isArray(response.data)) {
-        if (pageNum === 1) {
-          console.log('Setting initial members:', response.data);
-          setMembers(response.data);
-        } else {
-          console.log('Appending members:', response.data);
-          setMembers(prev => [...prev, ...response.data]);
-        }
-        
-        // Check if there are more pages based on pagination info
-        if (response.pagination) {
-          const hasNextPage = response.pagination.page < response.pagination.pages;
-          setHasMore(hasNextPage);
-          setPage(response.pagination.page);
-        } else {
-          setHasMore(false);
-          setPage(pageNum);
-        }
+      if (response?.status === 'success') {
+        setMembers(response.data || []);
+        setTotalMembers(response.data.length);
+        setPage(pageNum);
       } else {
-        console.error('Invalid response structure:', response);
-        throw new Error(response?.message || 'Invalid response from server');
+        throw new Error('Failed to fetch members');
       }
     } catch (err) {
-      console.error('Error fetching members:', err);
-      setError(err.message || 'Failed to fetch members');
-      setMembers([]);  // Clear members on error
-      setHasMore(false);
+      setError(err.message);
+      showSnackbar(err.message, 'error');
     } finally {
       setLoading(false);
     }
-  }, []);
+  },
+  [limit, loading, showSnackbar]
+);
+
+  // const fetchMembers = useCallback(async (pageNum = 1, search = '', filters = {}) => {
+  //   try {
+  //     setLoading(true);
+  //     setError(null);
+  //     console.log('Fetching members with params:', { pageNum, search, filters });
+      
+  //     // Get user from localStorage to get navigatorId
+  //     const user = JSON.parse(localStorage.getItem('user') || '{}');
+  //     if (!user || !user.userId) {
+  //       throw new Error('User not authenticated. Please login again.');
+  //     }
+      
+  //     // Create a new object with navigatorId first
+  //     const queryParams = {
+  //       doctorId: user.userId,
+  //       page: pageNum,
+  //       limit: 10,
+  //       search,
+  //       sortBy: 'createdAt',
+  //       sortOrder: 'asc',
+  //       isStudent: false
+  //     };
+
+  //     // Only spread filters that don't override our required params
+  //     const { doctorId, page, limit, ...otherFilters } = filters;
+      
+  //     const finalParams = {
+  //       ...queryParams,
+  //       ...otherFilters
+  //     };
+
+  //     console.log('Final query params:', finalParams);
+      
+  //     const response = await membersService.getMembers(finalParams);
+
+  //     console.log('API Response:', response);
+      
+  //     // Check if response has the expected structure
+  //     if (response?.status === 'success' && Array.isArray(response.data)) {
+  //       if (pageNum === 1) {
+  //         console.log('Setting initial members:', response.data);
+  //         setMembers(response.data);
+  //       } else {
+  //         console.log('Appending members:', response.data);
+  //         setMembers(prev => [...prev, ...response.data]);
+  //       }
+        
+  //       // Check if there are more pages based on pagination info
+  //       if (response.pagination) {
+  //         const hasNextPage = response.pagination.page < response.pagination.pages;
+  //         setHasMore(hasNextPage);
+  //         setPage(response.pagination.page);
+  //       } else {
+  //         setHasMore(false);
+  //         setPage(pageNum);
+  //       }
+  //     } else {
+  //       console.error('Invalid response structure:', response);
+  //       throw new Error(response?.message || 'Invalid response from server');
+  //     }
+  //   } catch (err) {
+  //     console.error('Error fetching members:', err);
+  //     setError(err.message || 'Failed to fetch members');
+  //     setMembers([]);  // Clear members on error
+  //     setHasMore(false);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }, []);
 
   const handleScroll = useCallback((e) => {
     const { scrollTop, scrollHeight, clientHeight } = e.target;
@@ -134,11 +492,11 @@ const Members = () => {
     }
   }, [page, loading, hasMore, searchTerm, currentFilters, fetchMembers]);
 
-  // Update useEffect to include currentFilters dependency
-  useEffect(() => {
-    console.log('Initial members fetch');
-    fetchMembers(1, '', currentFilters);
-  }, [fetchMembers, currentFilters]);
+  // // Update useEffect to include currentFilters dependency
+  // useEffect(() => {
+  //   console.log('Initial members fetch');
+  //   fetchMembers(1, '', currentFilters);
+  // }, [fetchMembers, currentFilters]);
 
   const handleSearchClick = () => {
     setPage(1);
@@ -466,7 +824,7 @@ const Members = () => {
         </div>
       )}
 
-      <MembersList
+      {/* <MembersList
         members={members}
         selectedMembers={selectedMembers}
         handleCheckboxChange={handleCheckboxChange}
@@ -477,8 +835,51 @@ const Members = () => {
         onScroll={handleScroll}
         onEditNote={handleEditNote}
         onDeleteNote={handleDeleteNote}
+      /> */}
+     <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      <MembersList
+       // members={members}
+        members={paginatedMembers}
+        selectedMembers={selectedMembers}
+        handleCheckboxChange={handleCheckboxChange}
+        handleSelectAll={handleSelectAll}
+        setSelectedMember={handleViewMember}
+        handleDownloadId={handleDownloadId}
+        loading={loading}
+        //onScroll={handleScroll}
+        onEditNote={handleEditNote}
+        onDeleteNote={handleDeleteNote}
+        onRefresh={fetchMembers}
+         page={page}
+  limit={limit}
       />
 
+            {/* Pagination */}
+        {totalMembers > 0 && (
+        <div className="flex justify-end items-center gap-1 p-4">
+          <button
+            disabled={page === 1}
+            onClick={() => setPage(page - 1)}
+            className="px-3 py-1 border rounded disabled:opacity-50"
+          >
+            Prev
+          </button>
+
+          <span className="text-sm">
+            Page {page} of {Math.ceil(totalMembers / limit)}
+          </span>
+
+          <button
+            disabled={page >= Math.ceil(totalMembers / limit)}
+            onClick={() => setPage(page + 1)}
+            className="px-3 py-1 border rounded disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
+      )}
+   </div>
+        
       {showAddMember && (
         <AddEditMember
           onClose={() => setShowAddMember(false)}

@@ -64,9 +64,12 @@ const MedicalHistoryList = ({ member, onClose }) => {
     fetchMedicalHistories();
   };
 
-  console.log('Current medical histories state:', medicalHistories);
-  console.log('Loading state:', loading);
-  console.log('Error state:', error);
+ //16.1.26
+  const handleHistoryUpdated = () => {
+  setSelectedHistory(null);
+  fetchMedicalHistories();
+  onRefresh && onRefresh(); // 🔥 IMPORTANT
+};
 
   if (selectedHistory) {
     return (
@@ -75,6 +78,7 @@ const MedicalHistoryList = ({ member, onClose }) => {
         initialData={selectedHistory}
         onClose={() => setSelectedHistory(null)}
         onDelete={handleHistoryDeleted}
+         onSaveSuccess={handleHistoryUpdated}//16.1.26
       />
     );
   }

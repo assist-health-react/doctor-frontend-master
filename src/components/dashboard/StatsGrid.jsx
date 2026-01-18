@@ -63,13 +63,13 @@ const StatsGrid = () => {
       gradient: 'bg-gradient-to-br from-blue-500 to-blue-700', 
       path: '/members' 
     },
-    { 
-      name: 'Doctors', 
-      count: statsData.doctors, 
-      icon: FaUserMd, 
-      gradient: 'bg-gradient-to-br from-green-500 to-green-700', 
-      path: '/doctors' 
-    },
+    // { 
+    //   name: 'Doctors', 
+    //   count: statsData.doctors, 
+    //   icon: FaUserMd, 
+    //   gradient: 'bg-gradient-to-br from-green-500 to-green-700', 
+    //   path: '/doctors' 
+    // },
     { 
       name: 'Appointments', 
       count: statsData.appointments, 

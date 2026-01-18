@@ -17,6 +17,7 @@ import { toast } from 'react-hot-toast';
 const ViewMedicalHistory = ({ member, onClose, initialData, onDelete }) => {
   const [selectedSections, setSelectedSections] = useState({
     memberDetails: true,
+      medicalHistory: false,//2026
     primaryCarePhysician: false,
     treatingDoctors: false,
     followUps: false,
@@ -47,6 +48,8 @@ const ViewMedicalHistory = ({ member, onClose, initialData, onDelete }) => {
       
       if (response.status === 'success' && response.data) {
         const mappedData = {
+               primaryCarePhysician: response.data.primaryCarePhysician ,//26
+            medicalHistory: response.data.medicalHistory || [], //16.1.26  2026
           medicalReports: response.data.medicalReports || [],
           treatingDoctors: response.data.treatingDoctors || [],
           followUps: response.data.followUps || [],
@@ -54,7 +57,8 @@ const ViewMedicalHistory = ({ member, onClose, initialData, onDelete }) => {
           allergies: response.data.allergies || [],
           currentMedications: response.data.currentMedications || [],
           surgeries: response.data.surgeries || [],
-          previousMedicalConditions: response.data.previousMedicalConditions || [],
+          previousConditions: response.data.previousConditions || [],
+         // previousMedicalConditions: response.data.previousMedicalConditions || [],
           immunizations: response.data.immunizations || [],
           medicalTestResults: response.data.medicalTestResults || [],
           currentSymptoms: response.data.currentSymptoms || [],
@@ -99,6 +103,19 @@ const ViewMedicalHistory = ({ member, onClose, initialData, onDelete }) => {
     setIsEditMode(true);
   };
 
+  // const handleSave = async (updatedData) => {
+  //   try {
+  //     console.log('Saving updated data:', updatedData);
+  //     await medicalHistoryService.updateMedicalHistory(initialData._id, member._id || member.id, updatedData);
+  //     await fetchMedicalHistory(); // Refresh the data after saving
+  //     setIsEditMode(false);
+  //     toast.success('Medical history updated successfully');
+  //   } catch (error) {
+  //     console.error('Error updating medical history:', error);
+  //     toast.error(error.message || 'Failed to update medical history');
+  //   }
+  // };
+    //16.1.26
   const handleSave = async (updatedData) => {
     try {
       console.log('Saving updated data:', updatedData);
@@ -106,6 +123,8 @@ const ViewMedicalHistory = ({ member, onClose, initialData, onDelete }) => {
       await fetchMedicalHistory(); // Refresh the data after saving
       setIsEditMode(false);
       toast.success('Medical history updated successfully');
+      onSaveSuccess && onSaveSuccess(); // 🔥 TELL PARENT  
+   
     } catch (error) {
       console.error('Error updating medical history:', error);
       toast.error(error.message || 'Failed to update medical history');
@@ -209,121 +228,501 @@ const ViewMedicalHistory = ({ member, onClose, initialData, onDelete }) => {
     }));
   };
 
-  const handleDownloadPDF = () => {
-    const content = document.createElement('div');
-    content.className = 'pdf-content';
+  // const handleDownloadPDF = () => {
+  //   const content = document.createElement('div');
+  //   content.className = 'pdf-content';
 
-    // Add header
-    const header = document.createElement('div');
-    header.innerHTML = `
-      <div style="text-align: center; margin-bottom: 20px;">
-        <img src="/logo.png" alt="AssistHealth Logo" style="height: 60px; margin-bottom: 10px;" />
-        <h1 style="color: #1a365d; margin: 0;">Medical History Report</h1>
-        <p style="color: #4a5568; margin: 5px 0;">Generated on: ${new Date().toLocaleDateString()}</p>
-      </div>
-    `;
-    content.appendChild(header);
+  //   // Add header
+  //   const header = document.createElement('div');
+  //   header.innerHTML = `
+  //     <div style="text-align: center; margin-bottom: 20px;">
+  //       <img src="/logo.png" alt="AssistHealth Logo" style="height: 60px; margin-bottom: 10px;" />
+  //       <h1 style="color: #1a365d; margin: 0;">Medical History Report</h1>
+  //       <p style="color: #4a5568; margin: 5px 0;">Generated on: ${new Date().toLocaleDateString()}</p>
+  //     </div>
+  //   `;
+  //   content.appendChild(header);
 
-    // Add selected sections
-    if (selectedSections.memberDetails) {
-      const memberDetails = document.createElement('div');
-      memberDetails.innerHTML = `
-        <div style="margin-bottom: 20px;">
-          <h2 style="color: #2b6cb0; border-bottom: 2px solid #2b6cb0; padding-bottom: 5px;">Member Details</h2>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
-            <p><strong>Name:</strong> ${member.name}</p>
-            <p><strong>ID:</strong> ${member.id}</p>
-            <p><strong>Date of Birth:</strong> ${member.dob || 'N/A'}</p>
-            <p><strong>Blood Group:</strong> ${member.bloodGroup || 'N/A'}</p>
-          </div>
-        </div>
-      `;
-      content.appendChild(memberDetails);
-    }
+  //   // Add selected sections
+  //   if (selectedSections.memberDetails) {
+  //     const memberDetails = document.createElement('div');
+  //     memberDetails.innerHTML = `
+  //       <div style="margin-bottom: 20px;">
+  //         <h2 style="color: #2b6cb0; border-bottom: 2px solid #2b6cb0; padding-bottom: 5px;">Member Details</h2>
+  //         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+  //           <p><strong>Name:</strong> ${member.name}</p>
+  //           <p><strong>ID:</strong> ${member.id}</p>
+  //           <p><strong>Date of Birth:</strong> ${member.dob || 'N/A'}</p>
+  //           <p><strong>Blood Group:</strong> ${member.bloodGroup || 'N/A'}</p>
+  //         </div>
+  //       </div>
+  //     `;
+  //     content.appendChild(memberDetails);
+  //   }
 
-    if (selectedSections.primaryCarePhysician && displayData.primaryCarePhysician) {
-      const pcpSection = document.createElement('div');
-      pcpSection.innerHTML = `
-        <div style="margin-bottom: 20px;">
-          <h2 style="color: #2b6cb0; border-bottom: 2px solid #2b6cb0; padding-bottom: 5px;">Primary Care Physician</h2>
-          <div style="margin-top: 10px;">
-            <p><strong>Name:</strong> ${displayData.primaryCarePhysician.name || 'N/A'}</p>
-            <p><strong>Contact:</strong> ${displayData.primaryCarePhysician.contactNumber || 'N/A'}</p>
-          </div>
-        </div>
-      `;
-      content.appendChild(pcpSection);
-    }
+  //   if (selectedSections.primaryCarePhysician && displayData.primaryCarePhysician) {
+  //     const pcpSection = document.createElement('div');
+  //     pcpSection.innerHTML = `
+  //       <div style="margin-bottom: 20px;">
+  //         <h2 style="color: #2b6cb0; border-bottom: 2px solid #2b6cb0; padding-bottom: 5px;">Primary Care Physician</h2>
+  //         <div style="margin-top: 10px;">
+  //           <p><strong>Name:</strong> ${displayData.primaryCarePhysician.name || 'N/A'}</p>
+  //           <p><strong>Contact:</strong> ${displayData.primaryCarePhysician.contactNumber || 'N/A'}</p>
+  //         </div>
+  //       </div>
+  //     `;
+  //     content.appendChild(pcpSection);
+  //   }
 
-    if (selectedSections.currentMedications && displayData.currentMedications?.length > 0) {
-      const medicationsSection = document.createElement('div');
-      medicationsSection.innerHTML = `
-        <div style="margin-bottom: 20px;">
-          <h2 style="color: #2b6cb0; border-bottom: 2px solid #2b6cb0; padding-bottom: 5px;">Current Medications</h2>
-          <div style="margin-top: 10px;">
-            ${displayData.currentMedications.map(med => `
-              <div style="margin-bottom: 10px; padding: 10px; background-color: #f7fafc; border-radius: 4px;">
-                <p><strong>Medication:</strong> ${med.name}</p>
-                <p><strong>Dosage:</strong> ${med.dosage}</p>
-                <p><strong>Frequency:</strong> ${med.frequency}</p>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      `;
-      content.appendChild(medicationsSection);
-    }
+  //   if (selectedSections.currentMedications && displayData.currentMedications?.length > 0) {
+  //     const medicationsSection = document.createElement('div');
+  //     medicationsSection.innerHTML = `
+  //       <div style="margin-bottom: 20px;">
+  //         <h2 style="color: #2b6cb0; border-bottom: 2px solid #2b6cb0; padding-bottom: 5px;">Current Medications</h2>
+  //         <div style="margin-top: 10px;">
+  //           ${displayData.currentMedications.map(med => `
+  //             <div style="margin-bottom: 10px; padding: 10px; background-color: #f7fafc; border-radius: 4px;">
+  //               <p><strong>Medication:</strong> ${med.name}</p>
+  //               <p><strong>Dosage:</strong> ${med.dosage}</p>
+  //               <p><strong>Frequency:</strong> ${med.frequency}</p>
+  //             </div>
+  //           `).join('')}
+  //         </div>
+  //       </div>
+  //     `;
+  //     content.appendChild(medicationsSection);
+  //   }
 
-    if (selectedSections.allergies && displayData.allergies?.length > 0) {
-      const allergiesSection = document.createElement('div');
-      allergiesSection.innerHTML = `
-        <div style="margin-bottom: 20px;">
-          <h2 style="color: #2b6cb0; border-bottom: 2px solid #2b6cb0; padding-bottom: 5px;">Allergies</h2>
-          <div style="margin-top: 10px;">
-            ${displayData.allergies.map(allergy => `
-              <div style="margin-bottom: 10px; padding: 10px; background-color: #fff3e0; border-radius: 4px;">
-                <p><strong>Type:</strong> ${allergy.type}</p>
-                <p><strong>Description:</strong> ${allergy.description}</p>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      `;
-      content.appendChild(allergiesSection);
-    }
+  //   if (selectedSections.allergies && displayData.allergies?.length > 0) {
+  //     const allergiesSection = document.createElement('div');
+  //     allergiesSection.innerHTML = `
+  //       <div style="margin-bottom: 20px;">
+  //         <h2 style="color: #2b6cb0; border-bottom: 2px solid #2b6cb0; padding-bottom: 5px;">Allergies</h2>
+  //         <div style="margin-top: 10px;">
+  //           ${displayData.allergies.map(allergy => `
+  //             <div style="margin-bottom: 10px; padding: 10px; background-color: #fff3e0; border-radius: 4px;">
+  //               <p><strong>Type:</strong> ${allergy.type}</p>
+  //               <p><strong>Description:</strong> ${allergy.description}</p>
+  //             </div>
+  //           `).join('')}
+  //         </div>
+  //       </div>
+  //     `;
+  //     content.appendChild(allergiesSection);
+  //   }
 
-    if (selectedSections.immunizationHistory && displayData.immunizationHistory?.length > 0) {
-      const immunizationsSection = document.createElement('div');
-      immunizationsSection.innerHTML = `
-        <div style="margin-bottom: 20px;">
-          <h2 style="color: #2b6cb0; border-bottom: 2px solid #2b6cb0; padding-bottom: 5px;">Immunization History</h2>
-          <div style="margin-top: 10px;">
-            ${displayData.immunizationHistory.map(immunization => `
-              <div style="margin-bottom: 10px; padding: 10px; background-color: #f7fafc; border-radius: 4px;">
-                <p><strong>Vaccination:</strong> ${immunization.vaccination}</p>
-                <p><strong>Date Received:</strong> ${formatDate(immunization.dateReceived)}</p>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      `;
-      content.appendChild(immunizationsSection);
-    }
+  //   if (selectedSections.immunizationHistory && displayData.immunizationHistory?.length > 0) {
+  //     const immunizationsSection = document.createElement('div');
+  //     immunizationsSection.innerHTML = `
+  //       <div style="margin-bottom: 20px;">
+  //         <h2 style="color: #2b6cb0; border-bottom: 2px solid #2b6cb0; padding-bottom: 5px;">Immunization History</h2>
+  //         <div style="margin-top: 10px;">
+  //           ${displayData.immunizationHistory.map(immunization => `
+  //             <div style="margin-bottom: 10px; padding: 10px; background-color: #f7fafc; border-radius: 4px;">
+  //               <p><strong>Vaccination:</strong> ${immunization.vaccination}</p>
+  //               <p><strong>Date Received:</strong> ${formatDate(immunization.dateReceived)}</p>
+  //             </div>
+  //           `).join('')}
+  //         </div>
+  //       </div>
+  //     `;
+  //     content.appendChild(immunizationsSection);
+  //   }
 
-    // Configure PDF options
-    const options = {
-      margin: [10, 10],
-      filename: `medical_history_${member.id}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
+  //   // Configure PDF options
+  //   const options = {
+  //     margin: [10, 10],
+  //     filename: `medical_history_${member.id}.pdf`,
+  //     image: { type: 'jpeg', quality: 0.98 },
+  //     html2canvas: { scale: 2 },
+  //     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  //   };
 
-    // Generate PDF
-    html2pdf().from(content).set(options).save();
-  };
+  //   // Generate PDF
+  //   html2pdf().from(content).set(options).save();
+  // };
 
   // Section Header Component
+   const handleDownloadPDF = () => {
+  const content = document.createElement('div');
+  content.className = 'pdf-content';
+  content.style.fontFamily = "Arial";
+  content.style.paddingBottom = "80px"; 
+  //   console.log(member?.healthcareTeam?.navigator) 
+  //  console.log(member?.healthcareTeam?._id?.name);
+
+  //   console.log(member?.healthcareTeam?._id?.phone);
+
+    // ============================
+  // DYNAMIC NAVIGATOR DETAILS
+  // ============================
+  const navigatorName = member?.healthcareTeam?.navigator?._id?.name || "N/A";
+  const navigatorPhone =member?.healthcareTeam?.navigator?._id?.phone || "N/A";
+
+  // ============================
+  // HEADER (AssistHealth)
+  // ============================
+  const header = document.createElement("div");
+  header.style.width = "100%";
+  header.style.borderBottom = "2px solid #000";
+  header.style.paddingBottom = "8px";
+  header.style.marginBottom = "15px";
+
+header.innerHTML = `
+  <div style="
+    display:flex; 
+    justify-content:space-between; 
+    align-items:center; 
+    width:100%;
+  ">
+
+    <!-- LEFT: LOGO -->
+    <div style="display:flex; align-items:center; width:33%;">
+      <img src="assets/logo_new.png" style="height:55px;" />
+    </div>
+
+    <!-- CENTER: TITLE BLOCK -->
+    <div style="
+      width:34%;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      line-height:1.2;
+    ">
+      <strong style="font-size:18px;">Assist<span style="color:#1a8cff;">Health</span></strong>
+      <span style="font-size:12px;">PERSONALIZED HEALTH SUPPORT</span>
+    </div>
+
+    <!-- RIGHT: NAVIGATOR DETAILS -->
+    <div style="font-size:13px; text-align:right; width:33%;">
+      <strong>AssistHealth Navigator :</strong><br>
+      Navigator Name : ${navigatorName}<br>
+      Contact Number : ${navigatorPhone}
+    </div>
+
+  </div>
+`;
+
+
+
+  content.appendChild(header);
+
+ 
+
+
+  const addSection = (title, html) => {
+    const section = document.createElement('div');
+    section.style.pageBreakInside = "avoid"; // <-- IMPORTANT
+    section.innerHTML = `
+      <div style="margin-bottom: 25px;">
+        <h2 style="
+          color:#2b6cb0;
+          border-bottom:2px solid #2b6cb0;
+          padding-bottom:5px;
+          margin-bottom:10px;
+        ">
+          ${title}
+        </h2>
+        ${html}
+      </div>`;
+    content.appendChild(section);
+  };
+
+
+  /* ===============================
+     MEMBER DETAILS
+  =============================== */
+  if (selectedSections.memberDetails) {
+    addSection("Member Details", `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <p><strong>Name:</strong> ${member.name}</p>
+        <p><strong>ID:</strong> ${member.id || member._id}</p>
+        <p><strong>Date of Birth:</strong> ${member.dob || 'N/A'}</p>
+        <p><strong>Blood Group:</strong> ${member.bloodGroup || 'N/A'}</p>
+        <p><strong>Email:</strong> ${member.email || 'N/A'}</p>
+        <p><strong>Phone:</strong> ${member.phone || 'N/A'}</p>
+      </div>`);
+  }
+
+  /* ===============================
+     PRIMARY CARE PHYSICIAN
+  =============================== */
+
+  if (selectedSections.primaryCarePhysician && displayData.primaryCarePhysician) {
+    addSection("Primary Care Physician", `
+      <p><strong>Name:</strong> ${displayData.primaryCarePhysician.name || 'N/A'}</p>
+      <p><strong>Contact:</strong> ${displayData.primaryCarePhysician.contactNumber || 'N/A'}</p>
+    `);
+  }
+  /* ===============================
+     Medical History -- 16.1.26
+  =============================== */
+  if (selectedSections.medicalHistory) {
+    addSection("Medical History", `
+      ${(displayData.medicalHistory || [])
+        .map(c => `
+           <div style="background:#ffeaea;padding:10px;border-radius:4px;margin-bottom:8px;">
+            <p><strong>Condition:</strong> ${c.condition}</p>
+            <p><strong>Diagnosed At:</strong> ${formatDate(c.diagnosisDate)}</p>
+            <p><strong>Treatment:</strong> ${c.treatment}</p>
+            <p><strong>Notes:</strong> ${c.notes}</p>
+            <p><strong>Status:</strong> ${c.status}</p>
+          </div>`
+        ).join('')}
+    `);
+  }
+  /* ===============================
+     TREATING DOCTORS
+  =============================== */
+  if (selectedSections.treatingDoctors) {
+    addSection("Treating Doctors", `
+      ${(displayData.treatingDoctors || [])
+        .map(doc => `
+          <div style="background:#f0f7ff;padding:10px;border-radius:4px;margin-bottom:8px;">
+            <p><strong>Name:</strong> ${doc.name}</p>
+            <p><strong>Hospital:</strong> ${doc.hospitalName}</p>
+            <p><strong>Speciality:</strong> ${doc.speciality}</p>
+          </div>`
+        ).join('')}
+    `);
+  }
+
+  /* ===============================
+     FOLLOW UPS
+  =============================== */
+  if (selectedSections.followUps) {
+    addSection("Upcoming Follow-ups", `
+      ${(displayData.followUps || [])
+        .map(f => `
+          <div style="background:#faf5ff;padding:10px;border-radius:4px;margin-bottom:8px;">
+            <p><strong>Date:</strong> ${formatDate(f.date)}</p>
+            <p><strong>Specialist:</strong> ${f.specialistDetails}</p>
+            <p><strong>Remarks:</strong> ${f.remarks}</p>
+          </div>`
+        ).join('')}
+    `);
+  }
+
+  /* ===============================
+     PREVIOUS CONDITIONS
+  =============================== */
+  if (selectedSections.previousConditions) {
+    console.log("Previous Medical Conditions")
+    console.log(selectedSections.previousConditions)
+    //console.log(previousConditions)
+    addSection("Previous Medical Conditions  ", `
+      ${(displayData.previousConditions || [])
+        .map(c => `
+          <div style="background:#ffeaea;padding:10px;border-radius:4px;margin-bottom:8px;">
+            <p><strong>Condition:</strong> ${c.condition}</p>
+            <p><strong>Diagnosed At:</strong> ${formatDate(c.diagnosedAt)}</p>
+            <p><strong>Treatment:</strong> ${c.treatmentReceived}</p>
+            <p><strong>Notes:</strong> ${c.notes}</p>
+            <p><strong>Status:</strong> ${c.status}</p>
+          </div>`
+        ).join('')}
+    `);
+  }
+
+  /* ===============================
+     SURGERIES
+  =============================== */
+  if (selectedSections.surgeries) {
+    addSection("Surgeries", `
+      ${(displayData.surgeries || [])
+        .map(s => `
+          <div style="background:#fff5f5;padding:10px;border-radius:4px;margin-bottom:8px;">
+            <p><strong>Procedure:</strong> ${s.procedure}</p>
+            <p><strong>Date:</strong> ${formatDate(s.date)}</p>
+            <p><strong>Surgeon:</strong> ${s.surgeonName}</p>
+          </div>`
+        ).join('')}
+    `);
+  }
+
+  /* ===============================
+     FAMILY HISTORY
+  =============================== */
+  if (selectedSections.familyHistory) {
+    addSection("Family History", `
+      ${(displayData.familyHistory || [])
+        .map(h => `
+          <div style="background:#faf5ff;padding:10px;border-radius:4px;margin-bottom:8px;">
+            <p><strong>Condition:</strong> ${h.condition}</p>
+            <p><strong>Relationship:</strong> ${h.relationship}</p>
+          </div>`
+        ).join('')}
+    `);
+  }
+
+  /* ===============================
+     CURRENT MEDICATIONS
+  =============================== */
+  if (selectedSections.currentMedications) {
+    addSection("Current Medications", `
+      ${(displayData.currentMedications || [])
+        .map(m => `
+          <div style="background:#f0fff4;padding:10px;border-radius:4px;margin-bottom:8px;">
+            <p><strong>Medication:</strong> ${m.name}</p>
+            <p><strong>Dosage:</strong> ${m.dosage}</p>
+            <p><strong>Frequency:</strong> ${m.frequency}</p>
+          </div>`
+        ).join('')}
+    `);
+  }
+
+  /* ===============================
+     IMMUNIZATIONS
+  =============================== */
+  if (selectedSections.immunizationHistory) {
+    addSection("Immunization History", `
+      ${(displayData.immunizations || [])
+        .map(i => `
+          <div style="background:#eef2ff;padding:10px;border-radius:4px;margin-bottom:8px;">
+            <p><strong>Vaccine:</strong> ${i.vaccine}</p>
+            <p><strong>Date:</strong> ${formatDate(i.date)}</p>
+          </div>`
+        ).join('')}
+    `);
+  }
+
+  /* ===============================
+     TEST RESULTS
+  =============================== */
+  if (selectedSections.medicalTestResults) {
+    addSection("Medical Test Results", `
+      ${(displayData.medicalTestResults || [])
+        .map(t => `
+          <div style="background:#e6fffa;padding:10px;border-radius:4px;margin-bottom:8px;">
+            <p><strong>Test:</strong> ${t.name}</p>
+            <p><strong>Date:</strong> ${formatDate(t.date)}</p>
+            <p><strong>Results:</strong> ${t.results}</p>
+          </div>`
+        ).join('')}
+    `);
+  }
+
+  /* ===============================
+     LIFESTYLE HABITS
+  =============================== */
+  if (selectedSections.lifestyleHabits) {
+    const l = displayData.lifestyleHabits || {};
+    addSection("Lifestyle Habits", `
+      <p><strong>Smoking:</strong> ${l.smoking}</p>
+      <p><strong>Alcohol Consumption:</strong> ${l.alcoholConsumption}</p>
+      <p><strong>Exercise:</strong> ${l.exercise}</p>
+    `);
+  }
+
+  /* ===============================
+     HEALTH INSURANCE
+  =============================== */
+  if (selectedSections.healthInsurance) {
+    addSection("Health Insurance", `
+      ${(displayData.healthInsurance || [])
+        .map(h => `
+          <div style="background:#ecfdf5;padding:10px;border-radius:4px;margin-bottom:8px;">
+            <p><strong>Provider:</strong> ${h.provider}</p>
+            <p><strong>Policy Number:</strong> ${h.policyNumber}</p>
+            <p><strong>Expiry:</strong> ${formatDate(h.expiryDate)}</p>
+          </div>`
+        ).join('')}
+    `);
+  }
+
+  /* ===============================
+     ALLERGIES
+  =============================== */
+  if (selectedSections.allergies) {
+    addSection("Allergies", `
+      ${(displayData.allergies || [])
+        .map(a => `
+          <div style="background:#fff7e6;padding:10px;border-radius:4px;margin-bottom:8px;">
+            <p><strong>Medications:</strong> ${a.medications}</p>
+            <p><strong>Food:</strong> ${a.food}</p>
+            <p><strong>Other:</strong> ${a.other}</p>
+          </div>`
+        ).join('')}
+    `);
+  }
+
+  /* ===============================
+     MEDICAL REPORTS + FILES
+  =============================== */
+  // if (selectedSections.medicalReports) {
+  //   addSection("Medical Reports", `
+  //     ${(displayData.medicalReports || [])
+  //       .map(r => `
+  //         <div style="background:#ebf8ff;padding:10px;border-radius:4px;margin-bottom:8px;">
+  //           <p><strong>Name:</strong> ${r.name}</p>
+  //           <p><strong>Date:</strong> ${formatDate(r.date)}</p>
+  //           <p><strong>Description:</strong> ${r.description}</p>
+
+  //           ${r.files?.map(f => `
+  //             <p><strong>File:</strong> ${f.split('/').pop()}</p>
+  //           `).join('') || ""}
+  //         </div>`
+  //       ).join('')}
+  //   `);
+  // }
+
+  // PDF Options
+  const options = {
+    margin: [10, 10],
+    filename: `medical_history_${member.id || member._id}.pdf`,
+    image: { type: "jpeg", quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+  };
+
+ // html2pdf().from(content).set(options).save();
+html2pdf()
+  .from(content)
+  .set(options)
+ .toPdf()
+.get("pdf")
+.then((pdf) => {
+  const totalPages = pdf.internal.getNumberOfPages();
+  const pageWidth = pdf.internal.pageSize.width;
+  const pageHeight = pdf.internal.pageSize.height;
+
+  for (let i = 1; i <= totalPages; i++) {
+    pdf.setPage(i);
+
+    pdf.setFontSize(8);
+    pdf.setTextColor(60);
+
+    const iconSize = 5;
+    const footerY = pageHeight - 10; // better spacing
+
+    // ==========================
+    // LEFT FOOTER (ICON + TEXT)
+    // ==========================
+    pdf.addImage("/assets/icons/phone.png", "PNG", 10, footerY - 4, iconSize, iconSize);
+    pdf.text("9611232519", 18, footerY);
+
+    // ==========================
+    // CENTER FOOTER (ICON + TEXT)
+    // ==========================
+    const centerX = pageWidth / 2;
+
+    pdf.addImage("/assets/icons/globe.png", "PNG", centerX - 23, footerY - 4, iconSize, iconSize);
+    pdf.text("www.assisthealth.in", centerX, footerY, { align: "center" });
+
+    // ==========================
+    // RIGHT FOOTER (PAGE NO)
+    // ==========================
+    pdf.text(`Page - ${i}`, pageWidth - 22, footerY);
+  }
+})
+
+.save();
+
+
+
+};
   const SectionHeader = ({ title, icon: Icon, section, bgColor, textColor, borderColor }) => (
     <div className={`px-6 py-4 ${bgColor} border-b ${borderColor} flex justify-between items-center`}>
       <h3 className={`text-lg font-semibold ${textColor} flex items-center gap-2`}>
@@ -381,6 +780,33 @@ const ViewMedicalHistory = ({ member, onClose, initialData, onDelete }) => {
               >
                 <FaEdit />
               </button>
+              {/* NEw */}
+              {/* Check All */}
+              <button
+                onClick={() => {
+                  const allTrue = Object.keys(selectedSections)
+                    .reduce((acc, key) => ({ ...acc, [key]: true }), {});
+                  setSelectedSections(allTrue);
+                  console.log(allTrue);
+                  
+                }}
+                className="px-3 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition"
+              >
+                Check All
+              </button>
+
+              {/* Uncheck All */}
+              <button
+                onClick={() => {
+                  const allFalse = Object.keys(selectedSections)
+                    .reduce((acc, key) => ({ ...acc, [key]: false }), {});
+                  setSelectedSections(allFalse);
+                }}
+                className="px-3 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition"
+              >
+                Uncheck All
+              </button>
+              {/*  */}
               <button 
                 onClick={handleDownloadPDF}
                 className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
@@ -508,6 +934,37 @@ const ViewMedicalHistory = ({ member, onClose, initialData, onDelete }) => {
                   </div>
                 </div>
               </div>
+
+               {/* Medical History  16.1.26   2026*/}
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                <SectionHeader
+                  title="Medical History"
+                  icon={<FaHeartbeat className="text-red-600" />}
+                  section="medicalHistory"
+                  bgColor="bg-red-50"
+                  textColor="text-red-800"
+                  borderColor="border-red-100"
+                />
+                <div className="p-6">
+                  <div className="space-y-4">
+                    {(displayData.medicalHistory || []).map((condition, index) => (
+                      <div key={index} className="p-4 bg-red-50 rounded-lg border border-red-100">
+                        <div className="grid grid-cols-1 gap-3">
+                          <DetailRow icon={<FaHeartbeat className="text-red-500" />} label="Condition" value={condition.condition} />
+                          <DetailRow icon={<FaCalendar className="text-red-500" />} label="Diagnosed At" value={formatDate(condition.diagnosisDate)} />
+                          <DetailRow icon={<FaMedkit className="text-red-500" />} label="Treatment" value={condition.treatment} />
+                          <DetailRow icon={<FaClipboard className="text-red-500" />} label="Notes" value={condition.notes} />
+                          <DetailRow icon={<FaInfoCircle className="text-red-500" />} label="Status" value={condition.status} />
+                        </div>
+                      </div>
+                    ))}
+                    {(!displayData.medicalHistory || displayData.medicalHistory.length === 0) && (
+                      <p className="text-gray-500 italic">No Medical History recorded</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
 
               {/* Treating Doctors */}
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -656,14 +1113,14 @@ const ViewMedicalHistory = ({ member, onClose, initialData, onDelete }) => {
                 <SectionHeader
                   title="Previous Medical Conditions"
                   icon={<FaHeartbeat className="text-red-600" />}
-                  section="previousMedicalConditions"
+                  section="previousConditions"
                   bgColor="bg-red-50"
                   textColor="text-red-800"
                   borderColor="border-red-100"
                 />
                 <div className="p-6">
                   <div className="space-y-4">
-                    {(displayData.previousMedicalConditions || []).map((condition, index) => (
+                    {(displayData.previousConditions || []).map((condition, index) => (
                       <div key={index} className="p-4 bg-red-50 rounded-lg border border-red-100">
                         <div className="grid grid-cols-1 gap-3">
                           <DetailRow icon={<FaHeartbeat className="text-red-500" />} label="Condition" value={condition.condition} />
@@ -674,7 +1131,7 @@ const ViewMedicalHistory = ({ member, onClose, initialData, onDelete }) => {
                         </div>
                       </div>
                     ))}
-                    {(!displayData.previousMedicalConditions || displayData.previousMedicalConditions.length === 0) && (
+                    {(!displayData.previousConditions || displayData.previousConditions.length === 0) && (
                       <p className="text-gray-500 italic">No previous conditions recorded</p>
                     )}
                   </div>

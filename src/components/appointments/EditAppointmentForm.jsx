@@ -16,16 +16,17 @@ const EditAppointmentForm = ({ onClose, onSuccess, appointment }) => {
   const [loadingDoctors, setLoadingDoctors] = useState(false);
   const [isPdfAvailable, setIsPdfAvailable] = useState(false);
   const [downloadLoading, setDownloadLoading] = useState(false);
-  const [specializations, setSpecializations] = useState([
-    { value: 'custom', label: '+ Add Custom Specialization' },
-    { value: 'General Medicine', label: 'General Medicine' },
-    { value: 'Cardiology', label: 'Cardiology' },
-    { value: 'Pediatrics', label: 'Pediatrics' },
-    { value: 'Orthopedics', label: 'Orthopedics' },
-    { value: 'Dermatology', label: 'Dermatology' },
-    { value: 'Neurology', label: 'Neurology' },
-    { value: 'Ophthalmology', label: 'Ophthalmology' }
-  ]);
+  // const [specializations, setSpecializations] = useState([
+  //   { value: 'custom', label: '+ Add Custom Specialization' },
+  //   { value: 'General Medicine', label: 'General Medicine' },
+  //   { value: 'Cardiology', label: 'Cardiology' },
+  //   { value: 'Pediatrics', label: 'Pediatrics' },
+  //   { value: 'Orthopedics', label: 'Orthopedics' },
+  //   { value: 'Dermatology', label: 'Dermatology' },
+  //   { value: 'Neurology', label: 'Neurology' },
+  //   { value: 'Ophthalmology', label: 'Ophthalmology' }
+  // ]);
+  const [specializations, setSpecializations] = useState([]);
 
   useEffect(() => {
     fetchDoctors();
@@ -89,10 +90,20 @@ const EditAppointmentForm = ({ onClose, onSuccess, appointment }) => {
       doctorDetails: appointment.doctorId
     } : null,
     customDoctorName: '',
-    specialization: appointment.specialization ? { 
-      value: appointment.specialization, 
-      label: appointment.specialization.charAt(0).toUpperCase() + appointment.specialization.slice(1) 
-    } : null,
+  // specialization: appointment.specialization ? { 
+    //   value: appointment.specialization, 
+    //   label: appointment.specialization.charAt(0).toUpperCase() + appointment.specialization.slice(1) 
+    // } : null,
+    //2026
+    specialization:
+      appointment.specialization && appointment.doctorId?.specializations
+        ? (() => {
+            const match = appointment.doctorId.specializations.find(
+              s => s._id === appointment.specialization
+            );
+            return match ? { value: match._id, label: match.name } : null;
+          })()
+        : null,
     customSpecialization: '',
     clinicName: appointment.hospitalName || '',
     clinicAddress: appointment.hospitalAddress || ''
@@ -169,10 +180,16 @@ const EditAppointmentForm = ({ onClose, onSuccess, appointment }) => {
         setIsCustomDoctor(false);
         // Update specializations when a doctor is selected
         if (selectedOption?.doctorDetails?.specializations?.length > 0) {
-          const doctorSpecializations = selectedOption.doctorDetails.specializations.map(spec => ({
-            value: spec,
-            label: spec.charAt(0).toUpperCase() + spec.slice(1)
-          }));
+         // const doctorSpecializations = selectedOption.doctorDetails.specializations.map(spec => ({
+          //   value: spec,
+          //   label: spec.charAt(0).toUpperCase() + spec.slice(1)
+          // }));
+          //2026
+          const doctorSpecializations =
+            selectedOption.doctorDetails.specializations.map(spec => ({
+              value: spec._id,
+              label: spec.name
+            }));
           setSpecializations([
             { value: 'custom', label: '+ Add Custom Specialization' },
             ...doctorSpecializations
@@ -317,7 +334,54 @@ const EditAppointmentForm = ({ onClose, onSuccess, appointment }) => {
       }
     })
   };
+  //18.1.2026
+  const BASE_URL = import.meta.env.VITE_API_URL;
+  useEffect(() => {
+    fetchSpecialties();
+  }, []);
+ const fetchSpecialties = async () => {
+  try {
+    const token = localStorage.getItem('token');
 
+    const res = await fetch(`/api/v1/doctors/specialties`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    const json = await res.json();
+
+    if (json.status !== 'success') {
+      throw new Error(json.message);
+    }
+
+    const options = json.data.map(s => ({
+      value: s._id,
+      label: s.name
+    }));
+
+    setSpecializations([
+      { value: 'custom', label: '+ Add Custom Specialization' },
+      ...options
+    ]);
+  } catch (err) {
+    console.error('Failed to load specialties', err);
+  }
+};
+// ✅ FIX: Load specialization list when Edit form opens
+useEffect(() => {
+  if (appointment?.doctorId?.specializations?.length) {
+    const doctorSpecializations = appointment.doctorId.specializations.map(spec => ({
+      value: spec._id,
+      label: spec.name
+    }));
+
+    setSpecializations([
+      { value: 'custom', label: '+ Add Custom Specialization' },
+      ...doctorSpecializations
+    ]);
+  }
+}, [appointment]);
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-xl p-6 max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">

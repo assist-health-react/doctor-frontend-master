@@ -18,16 +18,18 @@ const AddAppointmentForm = ({ onClose, onSuccess }) => {
   const [members, setMembers] = useState([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
-  const [specializations, setSpecializations] = useState([
-    { value: 'custom', label: '+ Add Custom Specialization' },
-    { value: 'General Medicine', label: 'General Medicine' },
-    { value: 'Cardiology', label: 'Cardiology' },
-    { value: 'Pediatrics', label: 'Pediatrics' },
-    { value: 'Orthopedics', label: 'Orthopedics' },
-    { value: 'Dermatology', label: 'Dermatology' },
-    { value: 'Neurology', label: 'Neurology' },
-    { value: 'Ophthalmology', label: 'Ophthalmology' }
-  ]);
+ // const [specializations, setSpecializations] = useState([
+  //   { value: 'custom', label: '+ Add Custom Specialization' },
+  //   { value: 'General Medicine', label: 'General Medicine' },
+  //   { value: 'Cardiology', label: 'Cardiology' },
+  //   { value: 'Pediatrics', label: 'Pediatrics' },
+  //   { value: 'Orthopedics', label: 'Orthopedics' },
+  //   { value: 'Dermatology', label: 'Dermatology' },
+  //   { value: 'Neurology', label: 'Neurology' },
+  //   { value: 'Ophthalmology', label: 'Ophthalmology' }
+  // ]);
+
+  const [specializations, setSpecializations] = useState([]);
 
   const [formData, setFormData] = useState({
     service: null,
@@ -169,10 +171,15 @@ const AddAppointmentForm = ({ onClose, onSuccess }) => {
         setIsCustomDoctor(false);
         // Update specializations when a doctor is selected
         if (selectedOption?.doctorDetails?.specializations?.length > 0) {
-          const doctorSpecializations = selectedOption.doctorDetails.specializations.map(spec => ({
-            value: spec,
-            label: spec.charAt(0).toUpperCase() + spec.slice(1)
-          }));
+          // const doctorSpecializations = selectedOption.doctorDetails.specializations.map(spec => ({
+          //   value: spec,
+          //   label: spec.charAt(0).toUpperCase() + spec.slice(1)
+          // }));
+             //2026
+              const doctorSpecializations = selectedOption.doctorDetails.specializations.map(spec => ({
+              value: spec._id,
+              label: spec.name
+            }));
           setSpecializations([
             { value: 'custom', label: '+ Add Custom Specialization' },
             ...doctorSpecializations
@@ -310,7 +317,40 @@ const AddAppointmentForm = ({ onClose, onSuccess }) => {
       }
     })
   };
+  //18.1.2026
+  const BASE_URL = import.meta.env.VITE_API_URL;
+  useEffect(() => {
+    fetchSpecialties();
+  }, []);
+ const fetchSpecialties = async () => {
+  try {
+    const token = localStorage.getItem('token');
 
+    const res = await fetch(`/api/v1/doctors/specialties`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    const json = await res.json();
+
+    if (json.status !== 'success') {
+      throw new Error(json.message);
+    }
+
+    const options = json.data.map(s => ({
+      value: s._id,
+      label: s.name
+    }));
+
+    setSpecializations([
+      { value: 'custom', label: '+ Add Custom Specialization' },
+      ...options
+    ]);
+  } catch (err) {
+    console.error('Failed to load specialties', err);
+  }
+};
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-xl p-6 max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">

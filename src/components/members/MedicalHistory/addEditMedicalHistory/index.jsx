@@ -59,9 +59,13 @@ const AddMedicalHistory = ({ member, onClose, onSave, initialData, isEdit = fals
       condition: '',
       relationship: 'father'
     }],
-    immunizationHistory: [{
-      vaccination: '',
-      dateReceived: new Date().toISOString().split('T')[0]
+    // immunizations: [{
+    //   vaccination: '',
+    //   dateReceived: new Date().toISOString().split('T')[0]
+    // }],
+      immunizations: [{
+      vaccine: '',
+      date:  new Date().toISOString().split('T')[0]
     }],
     medicalTestResults: [{
       name: '',
@@ -149,12 +153,12 @@ const AddMedicalHistory = ({ member, onClose, onSave, initialData, isEdit = fals
               status: rest.status || 'active'
             }))
           : formData.previousConditions,
-        immunizationHistory: initialData.immunizations?.length > 0 
+        immunizations: initialData.immunizations?.length > 0 
           ? initialData.immunizations.map(({ _id, ...rest }) => ({
-              vaccination: rest.vaccine || '',
-              dateReceived: rest.date?.split('T')[0] || ''
+              vaccine: rest.vaccine || '',
+              date: rest.date?.split('T')[0] || ''
             }))
-          : formData.immunizationHistory,
+          : formData.immunizations,
       medicalTestResults: initialData.medicalTestResults?.length > 0
           ? initialData.medicalTestResults.map(({ _id, ...rest }) => ({
         // medicalTestResults: initialData.medicalReports?.length > 0
@@ -259,8 +263,8 @@ const AddMedicalHistory = ({ member, onClose, onSave, initialData, isEdit = fals
         return { name: '', dosage: '', frequency: '' };
       case 'familyHistory':
         return { condition: '', relationship: 'father' };
-      case 'immunizationHistory':
-        return { vaccination: '', dateReceived: today };
+      case 'immunizations':
+        return { vaccine: '', date: today };
       case 'medicalTestResults':
         return { name: '', date: today, results: '' };
       case 'currentSymptoms':
@@ -383,7 +387,7 @@ const AddMedicalHistory = ({ member, onClose, onSave, initialData, isEdit = fals
   //           status: condition.status
   //         };
   //       }),
-  //       immunizations: formData.immunizationHistory.map(immunization => ({
+  //       immunizations: formData.immunizations.map(immunization => ({
   //         vaccine: immunization.vaccination,
   //         date: immunization.dateReceived ? new Date(immunization.dateReceived).toISOString() : null
   //       })),
@@ -603,7 +607,7 @@ const AddMedicalHistory = ({ member, onClose, onSave, initialData, isEdit = fals
           </button>
           <button
             type="submit"
-            onClick={handleSubmit}
+            //onClick={handleSubmit}
             className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-blue-300"
             disabled={isSubmitting}
           >

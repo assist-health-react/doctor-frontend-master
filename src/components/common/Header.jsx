@@ -1,50 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import ProfileMenu from './ProfileMenu';
-import NotificationMenu from './NotificationMenu';
+import  ProfileMenu  from './ProfileMenu';
+import  NotificationMenu  from './NotificationMenu';
+import { doctorsService } from '../../services/doctorsService';
+//import { navigatorsService } from '../../services/navigatorsService';
 
-const Header = ({ onLogout }) => {
+export const Header = ({ onLogout }) => {
   const location = useLocation();
-  const [userProfile, setUserProfile] = useState(() => {
-    try {
-      const profile = localStorage.getItem('userProfile');
-      if (profile) {
-        const parsedProfile = JSON.parse(profile);
-        return {
-          name: parsedProfile.name || 'Admin',
-          email: parsedProfile.email || '',
-          phoneNumber: parsedProfile.phoneNumber || '',
-          profilePic: parsedProfile.profilePic || null
-        };
-      }
-    } catch (error) {
-      console.error('Error parsing profile:', error);
-    }
-    return { name: 'Admin', email: '', phoneNumber: '', profilePic: null };
+  const [profileData, setProfileData] = useState({
+    name: '',
+    email: ''
   });
   
   useEffect(() => {
-    const handleStorageChange = () => {
+    const fetchProfile = async () => {
       try {
-        const profile = localStorage.getItem('userProfile');
-        if (profile) {
-          const parsedProfile = JSON.parse(profile);
-          setUserProfile({
-            name: parsedProfile.name || 'Admin',
-            email: parsedProfile.email || '',
-            phoneNumber: parsedProfile.phoneNumber || '',
-            profilePic: parsedProfile.profilePic || null
+        const response = await doctorsService.getProfile();
+        if (response?.status === 'success' && response?.data) {
+          setProfileData({
+            name: response.data.name || '',
+            email: response.data.email || ''
           });
         }
-      } catch (error) {
-        console.error('Error handling storage change:', error);
+      } catch (err) {
+        console.error('Error fetching profile:', err);
       }
     };
 
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    fetchProfile();
   }, []);
-
+  
   // Function to get the current section title
   const getCurrentTitle = () => {
     const path = location.pathname;
@@ -61,12 +46,7 @@ const Header = ({ onLogout }) => {
       '/blog': 'Blog',
       '/ecommerce': 'E-commerce',
       '/settings': 'Settings',
-      '/profile': 'Profile',
-      '/directory/hospitals': 'Hospitals',
-      '/directory/doctors': 'Doctors',
-      '/directory/diagnostics': 'Diagnostics',
-      '/directory/physiotherapy': 'Physiotherapy',
-      '/directory/homecare': 'Homecare',
+      '/profile': 'Profile'
     };
     
     return titles[path] || '';
@@ -83,13 +63,13 @@ const Header = ({ onLogout }) => {
         <div className="flex items-center space-x-4">
           <NotificationMenu />
           <div className="flex items-center space-x-3">
-            <span className="text-sm text-gray-700 font-medium">{userProfile.name}</span>
+            <span className="text-sm text-gray-700 font-medium">
+              {profileData.name || 'Loading...'}
+            </span>
             <ProfileMenu onLogout={onLogout} />
           </div>
         </div>
       </div>
     </header>
   );
-};
-
-export default Header; 
+}; 

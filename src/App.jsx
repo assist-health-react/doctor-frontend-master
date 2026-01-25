@@ -1,7 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import Logo from './components/Logo'
-import { Header } from './components/common/Header'
+//import { Header } from './components/common/Header'
+import Header from './components/common/Header'
 import { FaChevronLeft, FaChevronRight, FaChartBar, FaUserMd, FaUsers, 
   FaStar, FaCalendarAlt, FaNewspaper, FaCog,FaBars , FaClinicMedical } from 'react-icons/fa'
 import './App.css'
